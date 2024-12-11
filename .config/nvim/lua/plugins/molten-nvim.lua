@@ -31,13 +31,10 @@ return {
       )
       vim.keymap.set("n", "<leader>md", ":MoltenDelete<CR>", { silent = true, desc = "molten delete cell" })
       vim.keymap.set("n", "<leader>mh", ":MoltenHideOutput<CR>", { silent = true, desc = "hide output" })
-      vim.keymap.set(
-        "n",
-        "<leader>ms",
-        ":noautocmd MoltenEnterOutput<CR>",
-        { silent = true, desc = "show/enter output" }
-      )
+      vim.keymap.set("n", "<leader>me", ":noautocmd MoltenEnterOutput<CR>", { silent = true, desc = "enter output" })
+      vim.keymap.set("n", "<leader>ms", ":noautocmd MoltenShowOutput<CR>", { silent = true, desc = "show output" })
       vim.keymap.set("n", "<leader>mR", ":MoltenRestart!<CR>", { silent = true, desc = "restart kernel" })
+      vim.keymap.set("n", "<leader>mI", ":MoltenInterrupt<CR>", { silent = true, desc = "interrupt kernel" })
     end,
   },
 }
