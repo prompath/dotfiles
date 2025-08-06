@@ -1,0 +1,3 @@
+return {
+  "gauteh/vim-cppman",
+}

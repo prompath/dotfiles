@@ -1,0 +1,8 @@
+[window]
+opacity = 0.8
+
+[font]
+normal = { family = "FiraCode Nerd Font" }
+
+[mouse]
+hide_when_typing = true
