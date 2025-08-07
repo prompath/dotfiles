@@ -1,0 +1,250 @@
+[
+  {
+    "name": "panel-top",
+    "output": "",
+    "layer": "bottom",
+    "position": "top",
+    "controls": "right",
+    "width": "auto",
+    "height": 40,
+    "homogeneous": true,
+    "margin-top": 0,
+    "margin-bottom": 0,
+    "padding-horizontal": 0,
+    "padding-vertical": 0,
+    "spacing": 0,
+    "items-padding": 0,
+    "icons": "light",
+    "css-name": "panel-top",
+    "modules-left": [
+      "playerctl"
+    ],
+    "modules-center": [
+      "hyprland-workspaces"
+    ],
+    "modules-right": [
+      "clock",
+      "openweather",
+      "tray"
+    ],
+    "controls-settings": {
+      "components": [
+        "brightness",
+        "volume"
+      ],
+      "commands": {
+        "net": "",
+        "bluetooth": "",
+        "battery": ""
+      },
+      "show-values": true,
+      "interval": 1,
+      "icon-size": 16,
+      "hover-opens": false,
+      "leave-closes": true,
+      "click-closes": false,
+      "css-name": "controls-window",
+      "net-interface": "",
+      "custom-items": [
+        {
+          "name": "Panel settings",
+          "icon": "nwg-panel",
+          "cmd": "nwg-panel-config"
+        },
+        {
+          "name": "Play/Pause",
+          "icon": "media-playback-pause",
+          "cmd": "playerctl play-pause"
+        }
+      ],
+      "menu": {
+        "name": "Exit",
+        "icon": "system-shutdown-symbolic",
+        "items": [
+          {
+            "name": "Lock",
+            "cmd": "swaylock -f -c 000000"
+          },
+          {
+            "name": "Logout",
+            "cmd": "swaymsg exit"
+          },
+          {
+            "name": "Reboot",
+            "cmd": "loginctl -i reboot now"
+          },
+          {
+            "name": "Shutdown",
+            "cmd": "loginctl -i shutdown now"
+          }
+        ]
+      },
+      "output-switcher": false,
+      "backlight-controller": "ddcutil",
+      "backlight-device": "",
+      "window-width": 0,
+      "window-margin-horizontal": 10,
+      "window-margin-vertical": 10,
+      "root-css-name": "controls-overview",
+      "angle": 0.0
+    },
+    "tray": {
+      "root-css-name": "tray",
+      "inner-css-name": "inner-tray"
+    },
+    "sway-taskbar": {
+      "workspace-menu": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "name-max-len": 20,
+      "image-size": 16,
+      "workspaces-spacing": 0,
+      "task-padding": 0,
+      "show-app-icon": true,
+      "show-app-name": true,
+      "show-layout": true,
+      "workspace-buttons": false,
+      "all-workspaces": true,
+      "mark-autotiling": true,
+      "mark-xwayland": true,
+      "all-outputs": true
+    },
+    "sway-workspaces": {
+      "numbers": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "custom-labels": [],
+      "focused-labels": [],
+      "show-icon": true,
+      "image-size": 16,
+      "show-name": true,
+      "name-length": 40,
+      "mark-autotiling": true,
+      "mark-content": true,
+      "show-layout": true,
+      "angle": 0.0
+    },
+    "clock": {
+      "format": "%a, %d. %b  %H:%M",
+      "tooltip-text": "",
+      "on-left-click": "",
+      "on-middle-click": "",
+      "on-right-click": "",
+      "on-scroll-up": "",
+      "on-scroll-down": "",
+      "css-name": "clock",
+      "interval": 60,
+      "tooltip-date-format": false,
+      "root-css-name": "root-clock",
+      "angle": 0.0,
+      "calendar-path": "",
+      "calendar-css-name": "calendar-window",
+      "calendar-placement": "bottom",
+      "calendar-margin-horizontal": 0,
+      "calendar-margin-vertical": 10,
+      "calendar-icon-size": 24,
+      "calendar-interval": 60,
+      "calendar-on": true
+    },
+    "playerctl": {
+      "buttons-position": "left",
+      "icon-size": 8,
+      "chars": 30,
+      "scroll": false,
+      "button-css-name": "",
+      "label-css-name": "",
+      "interval": 1,
+      "show-cover": true,
+      "cover-size": 30,
+      "angle": 0.0
+    },
+    "button-sample": {
+      "command": "notify-send 'sample button'",
+      "icon": "view-grid",
+      "label": "",
+      "label-position": "right",
+      "css-name": "button-custom",
+      "icon-size": 16,
+      "tooltip": ""
+    },
+    "menu-start": "off",
+    "exclusive-zone": true,
+    "scratchpad": {},
+    "openweather": {
+      "module-id": "1670872048.0362601",
+      "appid": "a95a7931f698fd20d97db01b0e69a3fc",
+      "weatherbit-api-key": "",
+      "lat": 13.7563,
+      "long": 100.5018,
+      "lang": "en",
+      "units": "metric",
+      "interval": 1800,
+      "loc-name": "",
+      "weather-icons": "light",
+      "on-right-click": "",
+      "on-middle-click": "",
+      "on-scroll": "",
+      "icon-placement": "start",
+      "icon-size": 24,
+      "css-name": "weather",
+      "show-name": false,
+      "angle": 0.0,
+      "ow-popup-icons": "light",
+      "popup-header-icon-size": 48,
+      "popup-icon-size": 24,
+      "popup-text-size": "medium",
+      "popup-css-name": "weather-forecast",
+      "popup-placement": "right",
+      "popup-margin-horizontal": 0,
+      "popup-margin-top": 0,
+      "popup-margin-bottom": 0,
+      "show-humidity": true,
+      "show-wind": true,
+      "show-pressure": true,
+      "show-cloudiness": true,
+      "show-visibility": true,
+      "show-pop": true,
+      "show-volume": true
+    },
+    "brightness-slider": {},
+    "dwl-tags": {},
+    "button-playpause": {
+      "command": "playerctl play-pause",
+      "icon": "player_play",
+      "label": "",
+      "label-position": "right",
+      "tooltip": "",
+      "css-name": "button-custom",
+      "icon-size": 16
+    },
+    "run-if-output-exist": [],
+    "run-if-output-absent": [],
+    "monitor": "",
+    "width-as-percentage": false,
+    "sigrt": 64,
+    "use-sigrt": false,
+    "start-hidden": false,
+    "sway-mode": {},
+    "hyprland-taskbar": {},
+    "hyprland-workspaces": {},
+    "hyprland-submap": {},
+    "keyboard-layout": {},
+    "niri-taskbar": {},
+    "random-wallpaper": {},
+    "pinned": {}
+  }
+]
