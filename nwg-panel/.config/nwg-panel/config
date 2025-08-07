@@ -29,8 +29,8 @@
     ],
     "controls-settings": {
       "components": [
-        "brightness",
-        "volume"
+        "volume",
+        "battery"
       ],
       "commands": {
         "net": "",
