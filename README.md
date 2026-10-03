@@ -1,18 +1,26 @@
 # dotfiles
 To ease the pain.
 
-## tmux
-Clone TPM before running tmux.
+## Install
 ```bash
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+git clone git@github.com:prompath/dotfiles.git ~/Projects/dotfiles
+cd ~/Projects/dotfiles
+./install.sh
 ```
-Reload tmux if it is already running.
-```bash
-tmux source ~/.tmux.conf
-```
-Press `prefix` + `I` to install plugins.
- 
+The script installs zsh, oh-my-zsh, powerlevel10k, tmux, TPM, neovim and Claude Code,
+then stows the configs into `~` and installs the tmux and neovim plugins.
+Existing files that would be replaced are moved to `~/.dotfiles-backup/<timestamp>/`.
+
+Use `./install.sh --skip-packages` to skip the system package manager (no sudo needed).
+
+## Packages
+| Package | Config |
+|---|---|
+| `zsh` | `.zshrc`, `.p10k.zsh` |
+| `tmux` | `.tmux.conf` |
+| `nvim` | LazyVim config |
+| `claude` | Claude Code status line showing cwd, git branch and usage quota |
+| `alacritty` | `alacritty.toml`, only stowed when alacritty is installed |
+
 ## TODO
-1. Add script to install stow on any os.
-2. Add script to install essential programs (nvim, tmux, etc.)
-3. Add script to install nerd font. (Firacode should be fine)
+1. Add script to install nerd font. (Firacode should be fine)
