@@ -129,6 +129,14 @@ install_nerd_font() {
   echo "    installed for Windows too: pick \"FiraCode Nerd Font\" in the terminal settings"
 }
 
+# The Chrome that puppeteer downloaded, on Linux or macOS (same globs as .zshrc).
+chrome_bin() {
+  {
+    compgen -G "$HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome" ||
+      compgen -G "$HOME/.cache/puppeteer/chrome/*/chrome-mac-*/*.app/Contents/MacOS/*"
+  } | tail -1
+}
+
 # Add the marketplaces and plugins named in the stowed ~/.claude/settings.json.
 install_claude_plugins() {
   local kind name source
@@ -195,22 +203,24 @@ if ! has marp; then
 fi
 
 # Marp needs a browser for PDF export; .zshrc points CHROME_PATH at this one.
-if [ "$(uname -s)" = Linux ] && ! compgen -G "$HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome" >/dev/null; then
+if [ -z "$(chrome_bin)" ]; then
   log "Installing Chrome for Marp"
   npx -y @puppeteer/browsers install chrome@stable --path "$HOME/.cache/puppeteer"
-  "$(compgen -G "$HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome" | tail -1)" --version >/dev/null 2>&1 ||
-    echo "    chrome does not start, a system library is missing (find it with: ldd ~/.cache/puppeteer/chrome/*/chrome-linux64/chrome | grep 'not found')"
+  "$(chrome_bin)" --version >/dev/null 2>&1 ||
+    echo "    chrome does not start, on Linux a system library is missing (find it with: ldd ~/.cache/puppeteer/chrome/*/chrome-linux64/chrome | grep 'not found')"
 fi
 
 export PYENV_ROOT="$HOME/.pyenv"
-if [ ! -d "$PYENV_ROOT" ]; then
+export PATH="$PYENV_ROOT/bin:$PATH"
+# pyenv may also come from the package manager (brew), then there is no ~/.pyenv/bin
+if ! has pyenv; then
   log "Installing pyenv"
   curl -fsSL https://pyenv.run | bash
 fi
-if ! "$PYENV_ROOT/bin/pyenv" versions --bare | grep -q "^$PYTHON_VERSION"; then
+if ! pyenv versions --bare | grep -q "^$PYTHON_VERSION"; then
   log "Building python $PYTHON_VERSION with pyenv"
-  if "$PYENV_ROOT/bin/pyenv" install "$PYTHON_VERSION"; then
-    "$PYENV_ROOT/bin/pyenv" global "$PYTHON_VERSION"
+  if pyenv install "$PYTHON_VERSION"; then
+    pyenv global "$PYTHON_VERSION"
   else
     echo "    failed, check the build dependencies then: pyenv install $PYTHON_VERSION"
   fi

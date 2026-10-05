@@ -114,6 +114,8 @@ source $ZSH/oh-my-zsh.sh
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+# Homebrew on Apple Silicon is not on the default PATH (skipped when ~/.zprofile already did it)
+[[ -z $HOMEBREW_PREFIX && -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
 export PATH="$HOME/.local/bin:$PATH"
 
 # pyenv
@@ -126,4 +128,10 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
 # Chrome for Marp PDF export (downloaded by everything-ais/scripts/setup.sh)
-export CHROME_PATH="$(ls -d $HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome 2>/dev/null | tail -1)"
+# (N) = nullglob: no match expands to nothing instead of erroring
+chrome_bins=(
+  $HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome(N)
+  $HOME/.cache/puppeteer/chrome/*/chrome-mac-*/*.app/Contents/MacOS/*(N)
+)
+export CHROME_PATH="${chrome_bins[-1]}"
+unset chrome_bins
