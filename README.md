@@ -26,7 +26,7 @@ Still by hand afterwards: `claude` login, `gh auth login`, an SSH key for GitHub
 | `zsh` | `.zshrc`, `.p10k.zsh` |
 | `tmux` | `.tmux.conf` |
 | `nvim` | LazyVim config |
-| `claude` | Global Claude Code config: `settings.json` (plugins, rtk hook), `CLAUDE.md`, `RTK.md` and a status line showing cwd, git branch and usage quota |
+| `claude` | Global Claude Code config: `settings.json` (plugins, rtk hook), `CLAUDE.md`, `RTK.md` and a status line showing cwd, git branch, context used and usage quota |
 | `rtk` | `config.toml`, `filters.toml` |
 | `alacritty` | `alacritty.toml`, only stowed when alacritty is installed |
 
