@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Claude Code status line: cwd, git branch, usage quota.
+"""Claude Code status line: cwd, git branch, context used, usage quota.
 
 Colors and icons mirror ~/.p10k.zsh (lean style), without nerd font glyphs.
 """
@@ -99,15 +99,20 @@ def reset_in(resets_at):
     return f"{m}m"
 
 
-def quota_segment(rate_limits):
-    parts = []
+def percent(label, pct):
+    color = CONFLICTED if pct >= 90 else MODIFIED if pct >= 70 else CLEAN
+    return fg(META, label + " ") + fg(color, f"{pct:.0f}%")
+
+
+def quota_segment(context_pct, rate_limits):
+    # context_pct is None until the first response of a session
+    parts = [] if context_pct is None else [percent("ctx", context_pct)]
     for label, key in (("5h", "five_hour"), ("7d", "seven_day")):
         window = rate_limits.get(key) or {}
         pct = window.get("used_percentage")
         if pct is None:
             continue
-        color = CONFLICTED if pct >= 90 else MODIFIED if pct >= 70 else CLEAN
-        text = fg(META, label + " ") + fg(color, f"{pct:.0f}%")
+        text = percent(label, pct)
         left = reset_in(window.get("resets_at"))
         if left:
             text += fg(META, f" ↻ {left}")
@@ -142,7 +147,8 @@ def main():
         data = {}
     cwd = (data.get("workspace") or {}).get("current_dir") or data.get("cwd") or os.getcwd()
     left = "  ".join(s for s in (dir_segment(cwd), git_segment(cwd)) if s)
-    right = quota_segment(data.get("rate_limits") or {})
+    context_pct = (data.get("context_window") or {}).get("used_percentage")
+    right = quota_segment(context_pct, data.get("rate_limits") or {})
     if not right:
         print(left)
         return
