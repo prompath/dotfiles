@@ -251,6 +251,14 @@ echo "    claude-init"
 # after stowing, so the skill lands next to the stowed ~/.claude files
 [ -d "$HOME/.claude/skills/graphify" ] || graphify install --platform claude
 
+# --no-hooks: its hooks are per project and would be written to the current directory,
+# turn them on in a repo with /impeccable hooks on
+if [ ! -d "$HOME/.claude/skills/impeccable" ]; then
+  log "Installing impeccable"
+  npx -y impeccable install -y --providers=claude --scope=global --no-hooks </dev/null >/dev/null ||
+    echo "    failed, run: npx impeccable install"
+fi
+
 log "Installing Claude Code plugins"
 install_claude_plugins
 
