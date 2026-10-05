@@ -118,3 +118,10 @@ export PATH="$HOME/.local/bin:$PATH"
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
 command -v pyenv >/dev/null && eval "$(pyenv init - bash)"
+
+# nvm (Node version manager) — same lines as in ~/.bashrc
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+
+# Chrome for Marp PDF export (downloaded by everything-ais/scripts/setup.sh)
+export CHROME_PATH="$(ls -d $HOME/.cache/puppeteer/chrome/*/chrome-linux64/chrome 2>/dev/null | tail -1)"
