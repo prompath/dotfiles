@@ -8,8 +8,9 @@ cd ~/Projects/dotfiles
 ./install.sh
 ```
 The script installs zsh, oh-my-zsh, powerlevel10k, tmux, TPM, neovim, gh, node (nvm), python
-(pyenv), marp-cli with its Chrome, Claude Code with its plugins, graphify, rtk and the FiraCode
-Nerd Font, then stows the configs into `~` and installs the tmux and neovim plugins.
+(pyenv), marp-cli with its Chrome, Claude Code with its plugins, graphify, the impeccable design
+skill, rtk and the FiraCode Nerd Font, then stows the configs into `~` and installs the tmux and
+neovim plugins.
 Existing files that would be replaced are moved to `~/.dotfiles-backup/<timestamp>/`.
 It is safe to run again: anything already installed is skipped.
 
