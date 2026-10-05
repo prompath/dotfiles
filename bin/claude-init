@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Seed a repo with the default Claude Code config from claude-template/.
+# Usage: claude-init [dir]
+# Files that already exist are left alone, so it is safe to run again.
+set -euo pipefail
+
+SKILLS_REPO=JuliusBrussee/caveman
+SKILLS=(
+  investigate-first lean-build migration safe-refactor surgical-patch verify-and-stop
+  cavecrew caveman caveman-commit caveman-compress caveman-discover caveman-evidence-review
+  caveman-explore caveman-help caveman-learn caveman-manage caveman-optimize caveman-review
+  caveman-setup caveman-stats
+)
+
+TEMPLATE="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/../claude-template" && pwd)"
+TARGET="$(cd "${1:-.}" && pwd)"
+
+log() { printf '\033[1;38;5;39m==>\033[0m %s\n' "$*"; }
+has() { command -v "$1" >/dev/null 2>&1; }
+
+log "Initialising Claude config in ${TARGET/#"$HOME"/\~}"
+created=0 skipped=0
+while IFS= read -r -d '' file; do
+  rel="${file#"$TEMPLATE/"}"
+  if [ -e "$TARGET/$rel" ] || [ -L "$TARGET/$rel" ]; then
+    skipped=$((skipped + 1))
+    echo "    skipped $rel (exists)"
+    continue
+  fi
+  mkdir -p "$(dirname "$TARGET/$rel")"
+  cp -p "$file" "$TARGET/$rel"
+  created=$((created + 1))
+  case "$rel" in
+    CLAUDE.md) sed -i.bak "s/{{REPO}}/$(basename "$TARGET")/" "$TARGET/$rel" && rm "$TARGET/$rel.bak" ;;
+  esac
+done < <(find "$TEMPLATE" -type f -print0 | sort -z)
+echo "    $created files created, $skipped skipped"
+
+# Skills are fetched from upstream instead of being kept in the dotfiles.
+if [ -e "$TARGET/skills-lock.json" ]; then
+  echo "    skipped skills (skills-lock.json exists)"
+elif has npx; then
+  log "Installing skills from $SKILLS_REPO"
+  if (cd "$TARGET" && npx -y skills add "$SKILLS_REPO" -a claude-code -y -s "${SKILLS[@]}" </dev/null >/dev/null); then
+    echo "    ${#SKILLS[@]} skills in .claude/skills"
+  else
+    echo "    failed, run again or: npx skills add $SKILLS_REPO -a claude-code"
+  fi
+else
+  echo "    npx is not installed: skipped skills"
+fi
+
+has graphify || echo "    graphify is not installed: the hooks in .claude/settings.json will fail until it is"
