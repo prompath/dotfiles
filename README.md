@@ -3,7 +3,7 @@ To ease the pain.
 
 ## Install
 ```bash
-git clone git@github.com:prompath/dotfiles.git ~/Projects/dotfiles
+git clone https://github.com/prompath/dotfiles.git ~/Projects/dotfiles
 cd ~/Projects/dotfiles
 ./install.sh
 ```
