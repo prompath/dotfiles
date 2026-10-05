@@ -39,5 +39,7 @@ claude-init
 ```
 This adds `CLAUDE.md` and `.claude/settings.json` (permissions and graphify hooks), then
 fetches the skills listed in `bin/claude-init` into `.claude/skills/` with `npx skills add`.
-Files that already exist are skipped, so it is safe to run again. Edit `claude-template/` and
+An existing `CLAUDE.md` or `.claude/settings.json` that differs from the template is moved to
+`~/.dotfiles-backup/<timestamp>/<repo>/` and replaced; skills are skipped once `skills-lock.json`
+exists. Edit `claude-template/` and
 the `SKILLS` list to change the defaults for future repos.

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Seed a repo with the default Claude Code config from claude-template/.
 # Usage: claude-init [dir]
-# Files that already exist are left alone, so it is safe to run again.
+# Files that differ from the template are moved to ~/.dotfiles-backup/<timestamp>/<repo>/ and
+# replaced; identical ones are left alone, so it is safe to run again.
 set -euo pipefail
 
 SKILLS_REPO=JuliusBrussee/caveman
@@ -18,23 +19,30 @@ TARGET="$(cd "${1:-.}" && pwd)"
 log() { printf '\033[1;38;5;39m==>\033[0m %s\n' "$*"; }
 has() { command -v "$1" >/dev/null 2>&1; }
 
+BACKUP="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)/$(basename "$TARGET")"
+
+# The template file as it should land in the repo.
+render() { sed "s/{{REPO}}/$(basename "$TARGET")/" "$1"; }
+
 log "Initialising Claude config in ${TARGET/#"$HOME"/\~}"
 created=0 skipped=0
 while IFS= read -r -d '' file; do
   rel="${file#"$TEMPLATE/"}"
   if [ -e "$TARGET/$rel" ] || [ -L "$TARGET/$rel" ]; then
-    skipped=$((skipped + 1))
-    echo "    skipped $rel (exists)"
-    continue
+    if render "$file" | cmp -s - "$TARGET/$rel"; then
+      skipped=$((skipped + 1))
+      echo "    skipped $rel (unchanged)"
+      continue
+    fi
+    mkdir -p "$(dirname "$BACKUP/$rel")"
+    mv "$TARGET/$rel" "$BACKUP/$rel"
+    echo "    backed up $rel to ${BACKUP/#"$HOME"/\~}"
   fi
   mkdir -p "$(dirname "$TARGET/$rel")"
-  cp -p "$file" "$TARGET/$rel"
+  render "$file" >"$TARGET/$rel"
   created=$((created + 1))
-  case "$rel" in
-    CLAUDE.md) sed -i.bak "s/{{REPO}}/$(basename "$TARGET")/" "$TARGET/$rel" && rm "$TARGET/$rel.bak" ;;
-  esac
 done < <(find "$TEMPLATE" -type f -print0 | sort -z)
-echo "    $created files created, $skipped skipped"
+echo "    $created files written, $skipped unchanged"
 
 # Skills are fetched from upstream instead of being kept in the dotfiles.
 if [ -e "$TARGET/skills-lock.json" ]; then
