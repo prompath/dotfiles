@@ -49,6 +49,11 @@
   },
   "tui": "fullscreen",
   "theme": "dark",
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "autoMode": {
     "environment": [
       "### Org-wide",
