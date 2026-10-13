@@ -1,0 +1,6 @@
+{
+  "name": "work-anim",
+  "version": "0.1.0",
+  "description": "An animation above the prompt while Claude is working: fish, pong, rain or snow",
+  "types": "./types/index.d.ts"
+}

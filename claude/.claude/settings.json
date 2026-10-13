@@ -82,5 +82,8 @@
       "**Trusted repo**: ~/Projects/dotfiles (origin: https://github.com/prompath/dotfiles, public)",
       "**Org-specific CLIs**: None configured"
     ]
+  },
+  "env": {
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/.claude/mods/work-anim"
   }
 }
