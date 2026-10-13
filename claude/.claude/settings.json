@@ -1,4 +1,9 @@
 {
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -25,7 +30,8 @@
     "code-simplifier@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
     "academic-research-skills@academic-research-skills": true,
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "notion@anthropic-plugin-directory": true
   },
   "extraKnownMarketplaces": {
     "academic-research-skills": {
@@ -49,11 +55,6 @@
   },
   "tui": "fullscreen",
   "theme": "dark",
-  "attribution": {
-    "commit": "",
-    "pr": "",
-    "sessionUrl": false
-  },
   "autoMode": {
     "environment": [
       "### Org-wide",
