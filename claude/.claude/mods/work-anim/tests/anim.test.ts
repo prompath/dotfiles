@@ -28,7 +28,7 @@ const text = (rows: { text: string }[][]) => rows.map(row => row.map(seg => seg.
 
 test('every animation keeps its width and moves', () => {
   for (const kind of KINDS) {
-    for (const width of [20, 40, 80]) {
+    for (const width of [40, 80, 200]) {
       const first = text(ANIMATIONS[kind](0, width))
       const widths = new Set<number>()
       let hasMoved = false
@@ -39,8 +39,7 @@ test('every animation keeps its width and moves', () => {
         hasMoved ||= frame.join('\n') !== first.join('\n')
       }
 
-      expect([...widths], `${kind} at ${width}`).toHaveLength(1)
-      expect(Math.max(...widths) <= Math.max(width, 24), `${kind} at ${width}`).toBe(true)
+      expect([...widths], `${kind} at ${width}`).toEqual([width])
       expect(hasMoved, `${kind} at ${width}`).toBe(true)
     }
   }
@@ -84,6 +83,15 @@ test('plays a pinned animation, a random one each turn otherwise, and previews w
   expect(await turn('t3')).toBe(first('rain'))
 
   expect((await $.command.run(run('dog'))).text).toContain('No animation')
+
+  // the gallery plays all four, then clears, and leaves the choice as it was
+  expect((await $.command.run(run('gallery'))).text).toBe('Animation gallery')
+  const all = await lines(false)
+  for (const kind of KINDS) {
+    expect(all).toContain(`${kind}\n`)
+  }
+  await clock.advance(20_000)
+  expect(await lines(false)).toBe('')
   expect((await $.command.run(run(''))).text).toContain('Animation: rain')
 
   // random: never the same animation two turns running

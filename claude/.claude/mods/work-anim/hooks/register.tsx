@@ -6,7 +6,6 @@ import { ANIMATIONS, KINDS } from './frames'
 
 const FRAME_MS = 120
 const PREVIEW_MS = 10_000
-const MAX_WIDTH = 80
 
 const noTick: number | null = null
 const firstKind: Kind = 'fish'
@@ -16,6 +15,7 @@ const kind = atom({ plugin: 'work-anim', key: 'kind' } as const, firstKind)
 let timer: Timer | undefined
 let preview: Timer | undefined
 let inTurn = false
+let isGallery = false
 
 async function start($: EngineInterface) {
   timer?.cancel()
@@ -57,7 +57,7 @@ export const register: Register = on => {
     await $.command.register({
       name: 'anim',
       description: 'Pick the animation shown while Claude works, or a random one each turn',
-      argumentHint: `[random|${KINDS.join('|')}]`,
+      argumentHint: `[random|${KINDS.join('|')}|gallery]`,
       immediate: true,
     })
 
@@ -67,36 +67,43 @@ export const register: Register = on => {
   on('command.run', { command: 'anim' }, async ($, e) => {
     const arg = e.args.trim()
     const pick = arg === 'random' ? arg : KINDS.find(k => k === arg)
+    const options = `random, ${KINDS.join(', ')}, gallery`
 
     if (arg === '') {
-      return { text: `Animation: ${await choice($)}. Options: random, ${KINDS.join(', ')}` }
+      return { text: `Animation: ${await choice($)}. Options: ${options}` }
     }
-    if (pick === undefined) {
-      return { text: `No animation "${arg}". Try one of: random, ${KINDS.join(', ')}` }
+    if (pick === undefined && arg !== 'gallery') {
+      return { text: `No animation "${arg}". Try one of: ${options}` }
     }
 
-    await $.store.set('choice', pick)
-    await cast($)
+    // the gallery shows every animation and leaves the choice as it is
+    if (pick !== undefined) {
+      await $.store.set('choice', pick)
+      await cast($)
+    }
+    isGallery = pick === undefined
 
-    // outside a turn, play it for a while so the choice can be seen
+    // play it for a while so it can be seen outside a turn
+    preview?.cancel()
     if (!inTurn) {
-      preview?.cancel()
       await start($)
-      preview = $.clock.after(PREVIEW_MS, () => {
-        preview = undefined
-        if (!inTurn) {
-          void stop($)
-        }
-      })
     }
+    preview = $.clock.after(isGallery ? 2 * PREVIEW_MS : PREVIEW_MS, () => {
+      preview = undefined
+      isGallery = false
+      if (!inTurn) {
+        void stop($)
+      }
+    })
 
-    return { text: `Animation: ${pick}` }
+    return { text: pick === undefined ? 'Animation gallery' : `Animation: ${pick}` }
   })
 
   on('turn.start', async ($, e, next) => {
     inTurn = true
     preview?.cancel()
     preview = undefined
+    isGallery = false
     await cast($)
     await start($)
 
@@ -122,7 +129,10 @@ export const register: Register = on => {
       return next(e)
     }
 
-    const rows = ANIMATIONS[await read($, kind)](t, Math.min(e.props.bodyColumns, MAX_WIDTH))
+    const width = e.props.bodyColumns
+    const rows = isGallery
+      ? KINDS.flatMap(k => [[{ text: k, color: 'gray' }], ...ANIMATIONS[k](t, width)])
+      : ANIMATIONS[await read($, kind)](t, width)
     const { Box, Text } = $.ui.resolve(e)
 
     return (

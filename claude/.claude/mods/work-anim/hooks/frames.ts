@@ -26,10 +26,13 @@ const put = (row: string[], x: number, s: string) => {
   })
 }
 
+const SWIMMING_RIGHT = ['><(((º>', '><>', '>=>'] as const
+const SWIMMING_LEFT = ['<º)))><', '<><', '<º)><'] as const
+const LANES = ['yellow', 'cyan', 'green'] as const
+
 const fish: Animation = (t, width) => {
   const top = blank(width)
-  const mid = blank(width)
-  const low = blank(width)
+  const lanes = LANES.map(() => blank(width))
 
   for (let x = 0; x < width; x++) {
     if ((x + Math.floor(t / 3)) % 7 === 0) {
@@ -37,15 +40,21 @@ const fish: Animation = (t, width) => {
     }
   }
 
-  const big = '><(((º>'
-  put(mid, (t % (width + big.length)) - big.length, big)
-  const small = '<º)><'
-  put(low, width - (Math.floor(t / 2) % (width + small.length)), small)
+  // a wider sea holds more fish
+  for (let i = 0; i < Math.max(4, Math.round(width / 20)); i++) {
+    const h = hash(i, 3)
+    const isRight = (h & 1) === 1
+    const body = (isRight ? SWIMMING_RIGHT : SWIMMING_LEFT)[(h >>> 1) % 3] ?? '><>'
+    const at = (Math.floor(t / (1 + ((h >>> 4) % 3))) + (h >>> 8)) % (width + body.length)
+    const lane = lanes[i % lanes.length]
+    if (lane !== undefined) {
+      put(lane, isRight ? at - body.length : width - at, body)
+    }
+  }
 
   return [
     [{ text: top.join(''), color: 'blue' }],
-    [{ text: mid.join(''), color: 'yellow' }],
-    [{ text: low.join(''), color: 'cyan' }],
+    ...lanes.map((lane, i) => [{ text: lane.join(''), color: LANES[i] }]),
   ]
 }
 
@@ -61,8 +70,9 @@ const bounce = (n: number, max: number) => {
 }
 
 const pong: Animation = (t, width) => {
-  const court = Math.max(4, Math.min(width, 48) - 2 * CRAB_WIDTH - 2)
-  const x = bounce(t, court - 1)
+  const court = Math.max(4, width - 2 * CRAB_WIDTH - 2)
+  // a wider table gets a faster ball, so a rally takes about as long
+  const x = bounce(t * Math.max(1, Math.round(court / 40)), court - 1)
   const y = bounce(Math.floor(t / 3), 2)
   // each crab tracks the ball while it is on its half, and rests in the middle
   const left = x < court / 2 ? y : 1
