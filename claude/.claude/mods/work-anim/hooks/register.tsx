@@ -4,7 +4,7 @@ import type { EngineInterface, Register, Timer } from 'claude-code'
 import type { Kind } from '../types'
 import { ANIMATIONS, KINDS } from './frames'
 
-const FRAME_MS = 120
+const FRAME_MS = 160
 const PREVIEW_MS = 10_000
 
 const noTick: number | null = null

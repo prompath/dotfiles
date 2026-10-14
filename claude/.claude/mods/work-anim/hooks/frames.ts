@@ -61,6 +61,8 @@ const fish: Animation = (t, width) => {
 const CRAB = [' ▐▛███▜▌ ', '▝▜█████▛▘', '  ▘▘ ▝▝  '] as const
 const CRAB_WIDTH = 9
 const ORANGE = '#D97757'
+// keeps the right crab clear of the pane's collapse button
+const PONG_MARGIN = 4
 
 // 0, 1, .. max, .. 1, 0, 1, ..
 const bounce = (n: number, max: number) => {
@@ -70,7 +72,7 @@ const bounce = (n: number, max: number) => {
 }
 
 const pong: Animation = (t, width) => {
-  const court = Math.max(4, width - 2 * CRAB_WIDTH - 2)
+  const court = Math.max(4, width - 2 * CRAB_WIDTH - 2 - PONG_MARGIN)
   // a wider table gets a faster ball, so a rally takes about as long
   const x = bounce(t * Math.max(1, Math.round(court / 40)), court - 1)
   const y = bounce(Math.floor(t / 3), 2)
@@ -85,7 +87,7 @@ const pong: Animation = (t, width) => {
     }
     const text = (row === left ? '▌' : ' ') + table.join('') + (row === right ? '▐' : ' ')
 
-    return [{ text: crab, color: ORANGE }, { text }, { text: crab, color: ORANGE }]
+    return [{ text: crab, color: ORANGE }, { text }, { text: crab + ' '.repeat(PONG_MARGIN), color: ORANGE }]
   })
 }
 
