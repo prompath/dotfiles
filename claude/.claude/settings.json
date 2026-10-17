@@ -4,6 +4,19 @@
     "pr": "",
     "sessionUrl": false
   },
+  "permissions": {
+    "ask": [
+      "Bash(databricks api *)",
+      "Bash(databricks jobs submit *)",
+      "Bash(databricks jobs run-now *)",
+      "Bash(databricks workspace import *)",
+      "Bash(python3 *dbx-run.py*)",
+      "Bash(python *dbx-run.py*)",
+      "Bash(*/dbx-run.py*)",
+      "Bash(scripts/dbx-run.py*)",
+      "Bash(./scripts/dbx-run.py*)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
