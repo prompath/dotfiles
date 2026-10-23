@@ -20,6 +20,14 @@ Still by hand afterwards: `claude` login, `gh auth login`, an SSH key for GitHub
 `chsh -s $(command -v zsh)`. On WSL the font is also installed for Windows; select
 "FiraCode Nerd Font" in the terminal settings.
 
+aiur installs from a local clone, so its machine-specific path stays out of `settings.json`:
+```bash
+git clone https://github.com/prompath/aiur.git ~/Projects/aiur
+claude plugin marketplace add ~/Projects/aiur
+claude plugin install aiur@aiur
+```
+If `marketplace add` writes an `aiur` entry with an absolute path into `settings.json`, don't commit it.
+
 ## Packages
 | Package | Config |
 |---|---|

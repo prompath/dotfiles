@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/.claude/mods/work-anim"
+  },
   "attribution": {
     "commit": "",
     "pr": "",
@@ -44,7 +47,9 @@
     "claude-code-setup@claude-plugins-official": true,
     "academic-research-skills@academic-research-skills": true,
     "ponytail@ponytail": true,
-    "notion@anthropic-plugin-directory": true
+    "notion@anthropic-plugin-directory": true,
+    "frontend-slides@frontend-slides": true,
+    "aiur@aiur": true
   },
   "extraKnownMarketplaces": {
     "academic-research-skills": {
@@ -64,9 +69,19 @@
         "source": "github",
         "repo": "anthropics/claude-plugins-official"
       }
+    },
+    "frontend-slides": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/zarazhangrui/frontend-slides.git"
+      }
     }
   },
   "tui": "fullscreen",
+  "voice": {
+    "enabled": false,
+    "mode": "hold"
+  },
   "theme": "dark",
   "autoMode": {
     "environment": [
@@ -96,7 +111,5 @@
       "**Org-specific CLIs**: None configured"
     ]
   },
-  "env": {
-    "CLAUDE_CODE_PLUGIN_DIRS": "~/.claude/mods/work-anim"
-  }
+  "voiceEnabled": false
 }
