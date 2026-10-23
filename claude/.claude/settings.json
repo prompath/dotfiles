@@ -75,6 +75,12 @@
         "source": "git",
         "url": "https://github.com/zarazhangrui/frontend-slides.git"
       }
+    },
+    "aiur": {
+      "source": {
+        "source": "directory",
+        "path": "/home/jeera/Projects/aiur"
+      }
     }
   },
   "tui": "fullscreen",
