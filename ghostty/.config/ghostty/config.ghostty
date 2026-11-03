@@ -1,2 +1,3 @@
 font-family = "FiraCode Nerd Font"
 keybind = super+shift+r=prompt_tab_title
+window-new-tab-position = end
