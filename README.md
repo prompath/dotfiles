@@ -35,6 +35,7 @@ Changes reach Claude Code after you push and run `/plugin marketplace update aiu
 | `claude` | Global Claude Code config: `settings.json` (plugins, rtk hook), `CLAUDE.md`, `RTK.md` and a status line showing cwd, git branch, context used and usage quota |
 | `rtk` | `config.toml`, `filters.toml` |
 | `alacritty` | `alacritty.toml`, only stowed when alacritty is installed |
+| `ghostty` | `config.ghostty` (font, Cmd+Shift+R renames the tab), only stowed when ghostty is installed |
 
 ## Claude Code in a new repo
 The `claude` package is the global config, symlinked into `~/.claude`. Per-repo config starts
