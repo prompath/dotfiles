@@ -1,4 +1,4 @@
-export type Kind = 'fish' | 'pong' | 'rain' | 'snow'
+export type Kind = 'fish' | 'pong' | 'rain' | 'snow' | 'walk' | 'broom' | 'boat'
 
 declare module 'claude-code' {
   interface PluginState {

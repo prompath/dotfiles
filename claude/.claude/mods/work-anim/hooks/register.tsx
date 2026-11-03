@@ -6,6 +6,10 @@ import { ANIMATIONS, KINDS } from './frames'
 
 const FRAME_MS = 160
 const PREVIEW_MS = 10_000
+// assets/broom.py and assets/boat.py draw these: 96 frames each at 12 a second
+const PICTURES: readonly Kind[] = ['broom', 'boat']
+const PICTURE_MS = 1000 / 12
+const PICTURE_FRAMES = 96
 
 const noTick: number | null = null
 const firstKind: Kind = 'fish'
@@ -16,6 +20,19 @@ let timer: Timer | undefined
 let preview: Timer | undefined
 let inTurn = false
 let isGallery = false
+let picture: Timer | undefined
+let pictureKind: Kind = 'broom'
+let pictureFrame = 0
+// false once the terminal turns the picture down; walk plays in its place
+let canShowImages = true
+
+const pictureSource = ($: EngineInterface) =>
+  ({ file: `${$.plugin.root}/assets/${pictureKind}/${String(pictureFrame).padStart(2, '0')}.png`, format: 'png' }) as const
+
+function stopPicture() {
+  picture?.cancel()
+  picture = undefined
+}
 
 async function start($: EngineInterface) {
   timer?.cancel()
@@ -26,6 +43,7 @@ async function start($: EngineInterface) {
 }
 
 async function stop($: EngineInterface) {
+  stopPicture()
   timer?.cancel()
   timer = undefined
   await update($, tick, () => null)
@@ -130,9 +148,29 @@ export const register: Register = on => {
     }
 
     const width = e.props.bodyColumns
+    const current = await read($, kind)
+
+    if (PICTURES.includes(current) && canShowImages && !isGallery) {
+      pictureKind = current
+      // the timer swaps frames in place; a redraw sends only the one on screen
+      picture ??= $.clock.every(PICTURE_MS, () => {
+        pictureFrame = (pictureFrame + 1) % PICTURE_FRAMES
+        void $.ui.blit({ requestId: e.requestId, key: pictureKind, source: pictureSource($) }).then(result => {
+          if (result.deny !== undefined) {
+            $.ui.log(`${pictureKind} picture refused (${result.deny}), playing its text stand-in instead`)
+            canShowImages = false
+            stopPicture()
+          }
+        })
+      })
+      const { Image } = $.ui.resolve(e)
+      return <Image key={current} source={pictureSource($)} columns={width} rows={Math.min(Math.round((width * 3) / 80), e.props.maxRows)} alt=" " />
+    }
+    stopPicture()
+
     const rows = isGallery
       ? KINDS.flatMap(k => [[{ text: k, color: 'gray' }], ...ANIMATIONS[k](t, width)])
-      : ANIMATIONS[await read($, kind)](t, width)
+      : ANIMATIONS[current](t, width)
     const { Box, Text } = $.ui.resolve(e)
 
     return (
@@ -140,7 +178,7 @@ export const register: Register = on => {
         {rows.map(row => (
           <Box>
             {row.map(seg => (
-              <Text color={seg.color} wrap="truncate-end">
+              <Text color={seg.color} backgroundColor={seg.bg} wrap="truncate-end">
                 {seg.text}
               </Text>
             ))}

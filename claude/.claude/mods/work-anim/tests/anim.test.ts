@@ -55,9 +55,11 @@ test('plays a pinned animation, a random one each turn otherwise, and previews w
   const lines = async (isWorking: boolean) => {
     const ui = await $.ui.mount(band(isWorking))
     const found = await ui.findAll({ type: 'Text' })
+    // pictures draw no text; their source tells broom from boat
+    const pictures = await ui.findAll({ type: 'Image' })
     await ui.unmount()
 
-    return found.map(one => one.text ?? '').join('\n')
+    return found.map(one => one.text ?? '').join('\n') + pictures.map(one => JSON.stringify(one)).join('')
   }
   const turn = async (turnId: string) => {
     await $.turn.start({ text: 'hi', turnId })
@@ -84,7 +86,7 @@ test('plays a pinned animation, a random one each turn otherwise, and previews w
 
   expect((await $.command.run(run('dog'))).text).toContain('No animation')
 
-  // the gallery plays all four, then clears, and leaves the choice as it was
+  // the gallery plays all of them, then clears, and leaves the choice as it was
   expect((await $.command.run(run('gallery'))).text).toBe('Animation gallery')
   const all = await lines(false)
   for (const kind of KINDS) {
@@ -103,3 +105,19 @@ test('plays a pinned animation, a random one each turn otherwise, and previews w
     last = next
   }
 })
+
+for (const kind of ['broom', 'boat']) {
+  test(`${kind} draws its first frame as a picture`, async ($, on) => {
+    mock.clock(on)
+    mock.store(on, { choice: kind })
+    on('ui.render', () => ({ type: 'Box' }))
+    on('turn.start', ($, e) => ({ turnId: e.turnId }))
+
+    await $.turn.start({ text: 'hi', turnId: 't1' })
+    const ui = await $.ui.mount(band(true))
+    const [image] = await ui.findAll({ type: 'Image' })
+    await ui.unmount()
+
+    expect(JSON.stringify(image)).toContain(`/assets/${kind}/00.png`)
+  })
+}
