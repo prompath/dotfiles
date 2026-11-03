@@ -100,7 +100,7 @@ backup_conflicts() {
   done
 }
 
-# FiraCode Nerd Font, used by p10k, tmux and alacritty.
+# FiraCode Nerd Font, used by p10k, tmux, alacritty and ghostty.
 install_nerd_font() {
   if [ "$(uname -s)" = Darwin ]; then
     brew install --cask font-fira-code-nerd-font
@@ -248,6 +248,8 @@ fi
 
 log "Stowing configs"
 has alacritty && PACKAGES+=(alacritty)
+# ghostty is only on PATH inside its own shells on macOS
+{ has ghostty || [ -d /Applications/Ghostty.app ]; } && PACKAGES+=(ghostty)
 # keep stow from turning these shared directories into symlinks to the repo
 mkdir -p "$HOME/.config" "$HOME/.claude" "$HOME/.local/bin"
 for pkg in "${PACKAGES[@]}"; do
