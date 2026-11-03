@@ -1,0 +1,3 @@
+# the scripts in assets/ write these: previews, and a cache the mod never reads
+*.gif
+__pycache__/
