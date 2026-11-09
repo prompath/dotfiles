@@ -121,3 +121,60 @@ for (const kind of ['broom', 'boat', 'sleigh', 'writer']) {
     expect(JSON.stringify(image)).toContain(`/assets/${kind}/00.png`)
   })
 }
+
+test('the imp secretary session plays writer, idle too, and leaves the stored choice alone', async ($, on) => {
+  const clock = mock.clock(on)
+  mock.store(on, { choice: 'fish' })
+  on('ui.render', () => ({ type: 'Box' }))
+  on('turn.start', ($, e) => ({ turnId: e.turnId }))
+  on('turn.complete', ($, e) => ({ text: e.answer }))
+  on('skill.prompt', ($, e) => ({ text: e.text }))
+  // the band is unmounted between looks, so the picture's timer is turned away as it would be
+  on('ui.blit', () => ({ value: { deny: 'not mounted' } }))
+
+  const shows = async (isWorking: boolean) => {
+    const ui = await $.ui.mount(band(isWorking))
+    const found = JSON.stringify(await ui.findAll({ type: 'Image' })) + (await ui.findAll({ type: 'Text' })).map(one => one.text ?? '').join('\n')
+    await ui.unmount()
+
+    return found
+  }
+
+  // another skill changes nothing
+  await $.skill.prompt({ skill: 'commit', text: 'x' })
+  expect(await shows(false)).toBe('[]')
+
+  await $.skill.prompt({ skill: 'imp:secretary', text: 'x' })
+  expect(await shows(false)).toContain('/assets/writer/')
+
+  await $.turn.start({ text: 'hi', turnId: 't1' })
+  expect(await shows(true)).toContain('/assets/writer/')
+  await $.turn.complete({ answer: 'done', durationMs: 1, isAborted: false, turnId: 't1', reason: 'answer' })
+  await clock.advance(60_000)
+  expect(await shows(false)).toContain('/assets/writer/')
+
+  // `/anim` still sets the choice the other sessions read; this one keeps writer
+  expect((await $.command.run(run('rain'))).text).toBe('Animation: rain (this session keeps writer)')
+  await clock.advance(60_000)
+  expect(await shows(false)).toContain('/assets/writer/')
+  expect((await $.command.run(run(''))).text).toContain('Animation: rain')
+})
+
+test('a session without the secretary keeps its own animation and stops when idle', async ($, on) => {
+  mock.clock(on)
+  mock.store(on, { choice: 'fish' })
+  on('ui.render', () => ({ type: 'Box' }))
+  on('turn.start', ($, e) => ({ turnId: e.turnId }))
+  on('turn.complete', ($, e) => ({ text: e.answer }))
+
+  await $.turn.start({ text: 'hi', turnId: 't1' })
+  const ui = await $.ui.mount(band(true))
+  expect((await ui.findAll({ type: 'Text' })).map(one => one.text ?? '').join('\n')).toBe(text(ANIMATIONS.fish(0, 80)).join('\n'))
+  await ui.unmount()
+  await $.turn.complete({ answer: 'done', durationMs: 1, isAborted: false, turnId: 't1', reason: 'answer' })
+
+  const idle = await $.ui.mount(band(false))
+  expect(await idle.findAll({ type: 'Text' })).toEqual([])
+  expect(await idle.findAll({ type: 'Image' })).toEqual([])
+  await idle.unmount()
+})

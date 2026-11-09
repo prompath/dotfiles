@@ -27,6 +27,8 @@ let pictureFrame = 0
 let pictureSite = ''
 // false once the terminal turns the picture down; walk plays in its place
 let canShowImages = true
+// set once this session runs the imp secretary: writer, all the time; in memory, as $.store is every session's
+let isSecretary = false
 
 const pictureSource = ($: EngineInterface) =>
   ({ file: `${$.plugin.root}/assets/${pictureKind}/${String(pictureFrame).padStart(2, '0')}.png`, format: 'png' }) as const
@@ -45,6 +47,9 @@ async function start($: EngineInterface) {
 }
 
 async function stop($: EngineInterface) {
+  if (isSecretary) {
+    return
+  }
   stopPicture()
   timer?.cancel()
   timer = undefined
@@ -60,7 +65,7 @@ async function choice($: EngineInterface): Promise<Kind | 'random'> {
 
 // sets the animation to play: the chosen one, or a random one other than the last
 async function cast($: EngineInterface) {
-  const chosen = await choice($)
+  const chosen = isSecretary ? 'writer' : await choice($)
 
   await update($, kind, last => {
     if (chosen !== 'random') {
@@ -116,7 +121,20 @@ export const register: Register = on => {
       }
     })
 
-    return { text: pick === undefined ? 'Animation gallery' : `Animation: ${pick}` }
+    // the secretary session stores the pick for the others and keeps writer
+    const note = isSecretary && pick !== undefined ? ' (this session keeps writer)' : ''
+    return { text: pick === undefined ? 'Animation gallery' : `Animation: ${pick}${note}` }
+  })
+
+  // fires in the session that expands the skill, by `/imp:secretary` or the Skill tool
+  on('skill.prompt', async ($, e, next) => {
+    if (e.skill === 'imp:secretary' || (e.pluginName === 'imp' && e.skill === 'secretary')) {
+      isSecretary = true
+      await cast($)
+      await start($)
+    }
+
+    return next(e)
   })
 
   on('turn.start', async ($, e, next) => {
@@ -143,7 +161,7 @@ export const register: Register = on => {
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const t = await read($, tick)
     // isWorking also hides an animation left over from a turn whose end was missed
-    const isPlaying = e.props.isWorking || preview !== undefined
+    const isPlaying = e.props.isWorking || preview !== undefined || isSecretary
 
     if (t === null || e.props.hasSurvey || !isPlaying) {
       // the Image is gone, so a blit now would be refused
