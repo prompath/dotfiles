@@ -112,7 +112,12 @@ for (const kind of ['broom', 'boat', 'sleigh', 'writer']) {
     mock.store(on, { choice: kind })
     on('ui.render', () => ({ type: 'Box' }))
     on('turn.start', ($, e) => ({ turnId: e.turnId }))
+    on('skill.prompt', ($, e) => ({ text: e.text }))
 
+    // writer is no stored choice: only the secretary session plays it
+    if (kind === 'writer') {
+      await $.skill.prompt({ skill: 'imp:secretary', text: 'x' })
+    }
     await $.turn.start({ text: 'hi', turnId: 't1' })
     const ui = await $.ui.mount(band(true))
     const [image] = await ui.findAll({ type: 'Image' })
@@ -193,4 +198,33 @@ test('the imp secretary named without its plugin prefix plays writer too', async
   const ui = await $.ui.mount(band(false))
   expect(JSON.stringify(await ui.findAll({ type: 'Image' }))).toContain('/assets/writer/')
   await ui.unmount()
+})
+
+test('a session without the secretary never plays writer, stored or random', async ($, on) => {
+  mock.clock(on)
+  mock.store(on, { choice: 'writer' })
+  on('ui.render', () => ({ type: 'Box' }))
+  on('turn.start', ($, e) => ({ turnId: e.turnId }))
+  on('turn.complete', ($, e) => ({ text: e.answer }))
+
+  const turn = async (turnId: string) => {
+    await $.turn.start({ text: 'hi', turnId })
+    const ui = await $.ui.mount(band(true))
+    const found = JSON.stringify(await ui.findAll({ type: 'Image' })) + (await ui.findAll({ type: 'Text' })).map(one => one.text ?? '').join('\n')
+    await ui.unmount()
+    await $.turn.complete({ answer: 'done', durationMs: 1, isAborted: false, turnId, reason: 'answer' })
+
+    return found
+  }
+
+  // a stored writer reads as random
+  expect((await $.command.run(run(''))).text).toContain('Animation: random')
+  expect((await $.command.run(run(''))).text).not.toContain('writer')
+  // Math.random is read-only here; with writer in the pool, 60 draws miss it about once in 10,000 runs
+  for (let i = 0; i < 60; i++) {
+    expect(await turn(`r${i}`)).not.toContain('/assets/writer/')
+  }
+
+  expect((await $.command.run(run('writer'))).text).toBe('writer plays only in the secretary session')
+  expect((await $.command.run(run(''))).text).toContain('Animation: random')
 })

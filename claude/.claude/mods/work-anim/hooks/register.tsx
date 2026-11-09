@@ -11,6 +11,9 @@ const PICTURES: readonly Kind[] = ['broom', 'boat', 'sleigh', 'writer']
 const PICTURE_MS = 1000 / 12
 const PICTURE_FRAMES = 96
 
+// what `/anim` offers and random draws from: writer is the imp secretary session's own
+const CHOICES = KINDS.filter(k => k !== 'writer')
+
 const noTick: number | null = null
 const firstKind: Kind = 'fish'
 const tick = atom({ plugin: 'work-anim', key: 'tick' } as const, noTick)
@@ -60,7 +63,7 @@ async function stop($: EngineInterface) {
 async function choice($: EngineInterface): Promise<Kind | 'random'> {
   const stored = await $.store.get('choice')
 
-  return KINDS.find(k => k === stored) ?? 'random'
+  return CHOICES.find(k => k === stored) ?? 'random'
 }
 
 // sets the animation to play: the chosen one, or a random one other than the last
@@ -71,7 +74,7 @@ async function cast($: EngineInterface) {
     if (chosen !== 'random') {
       return chosen
     }
-    const rest = KINDS.filter(k => k !== last)
+    const rest = CHOICES.filter(k => k !== last)
 
     return rest[Math.floor(Math.random() * rest.length)] ?? last
   })
@@ -82,7 +85,7 @@ export const register: Register = on => {
     await $.command.register({
       name: 'anim',
       description: 'Pick the animation shown while Claude works, or a random one each turn',
-      argumentHint: `[random|${KINDS.join('|')}|gallery]`,
+      argumentHint: `[random|${CHOICES.join('|')}|gallery]`,
       immediate: true,
     })
 
@@ -91,11 +94,14 @@ export const register: Register = on => {
 
   on('command.run', { command: 'anim' }, async ($, e) => {
     const arg = e.args.trim()
-    const pick = arg === 'random' ? arg : KINDS.find(k => k === arg)
-    const options = `random, ${KINDS.join(', ')}, gallery`
+    const pick = arg === 'random' ? arg : CHOICES.find(k => k === arg)
+    const options = `random, ${CHOICES.join(', ')}, gallery`
 
     if (arg === '') {
       return { text: `Animation: ${await choice($)}. Options: ${options}` }
+    }
+    if (arg === 'writer') {
+      return { text: 'writer plays only in the secretary session' }
     }
     if (pick === undefined && arg !== 'gallery') {
       return { text: `No animation "${arg}". Try one of: ${options}` }
