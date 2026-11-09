@@ -123,6 +123,7 @@ export const register: Register = on => {
 
     // the secretary session stores the pick for the others and keeps writer
     const note = isSecretary && pick !== undefined ? ' (this session keeps writer)' : ''
+
     return { text: pick === undefined ? 'Animation gallery' : `Animation: ${pick}${note}` }
   })
 

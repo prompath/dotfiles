@@ -143,6 +143,9 @@ test('the imp secretary session plays writer, idle too, and leaves the stored ch
   // another skill changes nothing
   await $.skill.prompt({ skill: 'commit', text: 'x' })
   expect(await shows(false)).toBe('[]')
+  // another plugin's secretary changes nothing
+  await $.skill.prompt({ skill: 'secretary', pluginName: 'other', text: 'x' })
+  expect(await shows(false)).toBe('[]')
 
   await $.skill.prompt({ skill: 'imp:secretary', text: 'x' })
   expect(await shows(false)).toContain('/assets/writer/')
@@ -177,4 +180,17 @@ test('a session without the secretary keeps its own animation and stops when idl
   expect(await idle.findAll({ type: 'Text' })).toEqual([])
   expect(await idle.findAll({ type: 'Image' })).toEqual([])
   await idle.unmount()
+})
+
+test('the imp secretary named without its plugin prefix plays writer too', async ($, on) => {
+  mock.clock(on)
+  mock.store(on, { choice: 'fish' })
+  on('ui.render', () => ({ type: 'Box' }))
+  on('skill.prompt', ($, e) => ({ text: e.text }))
+  on('ui.blit', () => ({ value: { deny: 'not mounted' } }))
+
+  await $.skill.prompt({ skill: 'secretary', pluginName: 'imp', text: 'x' })
+  const ui = await $.ui.mount(band(false))
+  expect(JSON.stringify(await ui.findAll({ type: 'Image' }))).toContain('/assets/writer/')
+  await ui.unmount()
 })
