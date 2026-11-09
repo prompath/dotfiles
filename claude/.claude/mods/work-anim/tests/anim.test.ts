@@ -220,8 +220,8 @@ test('a session without the secretary never plays writer, stored or random', asy
   // a stored writer reads as random
   expect((await $.command.run(run(''))).text).toContain('Animation: random')
   expect((await $.command.run(run(''))).text).not.toContain('writer')
-  // Math.random is read-only here; with writer in the pool, 60 draws miss it about once in 10,000 runs
-  for (let i = 0; i < 60; i++) {
+  // Math.random is read-only here; with writer in the pool each draw takes one of 8 kinds, so 69 miss it with (7/8)^69, about once in 10,000 runs
+  for (let i = 0; i < 69; i++) {
     expect(await turn(`r${i}`)).not.toContain('/assets/writer/')
   }
 
