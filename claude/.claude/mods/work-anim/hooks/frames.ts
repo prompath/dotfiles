@@ -4,7 +4,7 @@ import type { Kind } from '../types'
 export type Seg = { text: string; color?: string; bg?: string }
 type Animation = (t: number, width: number) => Seg[][]
 
-export const KINDS: readonly Kind[] = ['fish', 'pong', 'rain', 'snow', 'walk', 'broom', 'boat']
+export const KINDS: readonly Kind[] = ['fish', 'pong', 'rain', 'snow', 'walk', 'broom', 'boat', 'sleigh', 'writer']
 
 // every frame is a pure function of the tick, so "random" is a hash
 const hash = (a: number, b = 0) => {
@@ -250,5 +250,5 @@ const walk: Animation = (t, width) => {
   )
 }
 
-// broom and boat are pictures (see register.tsx); walk and fish stand in where the terminal shows none
-export const ANIMATIONS: Record<Kind, Animation> = { fish, pong, rain, snow, walk, broom: walk, boat: fish }
+// broom, boat, sleigh and writer are pictures (see register.tsx); walk, fish, snow and rain stand in where the terminal shows none
+export const ANIMATIONS: Record<Kind, Animation> = { fish, pong, rain, snow, walk, broom: walk, boat: fish, sleigh: snow, writer: rain }

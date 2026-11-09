@@ -6,8 +6,8 @@ import { ANIMATIONS, KINDS } from './frames'
 
 const FRAME_MS = 160
 const PREVIEW_MS = 10_000
-// assets/broom.py and assets/boat.py draw these: 96 frames each at 12 a second
-const PICTURES: readonly Kind[] = ['broom', 'boat']
+// assets/broom.py, boat.py and sleigh.py draw these, and writer/ is a Wan 2.2 clip: 96 frames each at 12 a second
+const PICTURES: readonly Kind[] = ['broom', 'boat', 'sleigh', 'writer']
 const PICTURE_MS = 1000 / 12
 const PICTURE_FRAMES = 96
 
@@ -23,6 +23,8 @@ let isGallery = false
 let picture: Timer | undefined
 let pictureKind: Kind = 'broom'
 let pictureFrame = 0
+// the site the picture was last drawn under; a redraw may move it
+let pictureSite = ''
 // false once the terminal turns the picture down; walk plays in its place
 let canShowImages = true
 
@@ -144,6 +146,8 @@ export const register: Register = on => {
     const isPlaying = e.props.isWorking || preview !== undefined
 
     if (t === null || e.props.hasSurvey || !isPlaying) {
+      // the Image is gone, so a blit now would be refused
+      stopPicture()
       return next(e)
     }
 
@@ -152,14 +156,20 @@ export const register: Register = on => {
 
     if (PICTURES.includes(current) && canShowImages && !isGallery) {
       pictureKind = current
+      pictureSite = e.requestId
       // the timer swaps frames in place; a redraw sends only the one on screen
       picture ??= $.clock.every(PICTURE_MS, () => {
         pictureFrame = (pictureFrame + 1) % PICTURE_FRAMES
-        void $.ui.blit({ requestId: e.requestId, key: pictureKind, source: pictureSource($) }).then(result => {
-          if (result.deny !== undefined) {
+        void $.ui.blit({ requestId: pictureSite, key: pictureKind, source: pictureSource($) }).then(result => {
+          if (result.deny === undefined) {
+            return
+          }
+          stopPicture()
+          // shortcut: matches the deny's words, as only tmux has a `fix` code; key on a code if one comes
+          // not mounted is a passing gap between redraws: the next render starts the timer again
+          if (!result.deny.includes('mounted')) {
             $.ui.log(`${pictureKind} picture refused (${result.deny}), playing its text stand-in instead`)
             canShowImages = false
-            stopPicture()
           }
         })
       })

@@ -106,7 +106,7 @@ test('plays a pinned animation, a random one each turn otherwise, and previews w
   }
 })
 
-for (const kind of ['broom', 'boat']) {
+for (const kind of ['broom', 'boat', 'sleigh', 'writer']) {
   test(`${kind} draws its first frame as a picture`, async ($, on) => {
     mock.clock(on)
     mock.store(on, { choice: kind })
