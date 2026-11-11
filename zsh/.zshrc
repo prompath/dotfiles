@@ -135,3 +135,6 @@ chrome_bins=(
 )
 export CHROME_PATH="${chrome_bins[-1]}"
 unset chrome_bins
+
+# Claude
+alias sctr='claude "/imp:secretary"'
