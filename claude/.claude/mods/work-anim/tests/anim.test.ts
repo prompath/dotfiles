@@ -123,7 +123,8 @@ for (const kind of ['broom', 'boat', 'sleigh', 'writer']) {
     const [image] = await ui.findAll({ type: 'Image' })
     await ui.unmount()
 
-    expect(JSON.stringify(image)).toContain(`/assets/${kind}/00.png`)
+    // writer writes through a turn
+    expect(JSON.stringify(image)).toContain(kind === 'writer' ? '/assets/writer/writing/00.png' : `/assets/${kind}/00.png`)
   })
 }
 
@@ -152,20 +153,55 @@ test('the imp secretary session plays writer, idle too, and leaves the stored ch
   await $.skill.prompt({ skill: 'secretary', pluginName: 'other', text: 'x' })
   expect(await shows(false)).toBe('[]')
 
+  // she sips tea between turns and writes through one
   await $.skill.prompt({ skill: 'imp:secretary', text: 'x' })
-  expect(await shows(false)).toContain('/assets/writer/')
+  expect(await shows(false)).toContain('/assets/writer/sipping/')
 
   await $.turn.start({ text: 'hi', turnId: 't1' })
-  expect(await shows(true)).toContain('/assets/writer/')
+  expect(await shows(true)).toContain('/assets/writer/writing/')
   await $.turn.complete({ answer: 'done', durationMs: 1, isAborted: false, turnId: 't1', reason: 'answer' })
   await clock.advance(60_000)
-  expect(await shows(false)).toContain('/assets/writer/')
+  expect(await shows(false)).toContain('/assets/writer/sipping/')
 
   // `/anim` still sets the choice the other sessions read; this one keeps writer
   expect((await $.command.run(run('rain'))).text).toBe('Animation: rain (this session keeps writer)')
   await clock.advance(60_000)
   expect(await shows(false)).toContain('/assets/writer/')
   expect((await $.command.run(run(''))).text).toContain('Animation: rain')
+})
+
+test('the secretary searches the bookshelf while a Notion tool or ntn runs', async ($, on) => {
+  mock.clock(on)
+  on('ui.render', () => ({ type: 'Box' }))
+  on('turn.start', ($, e) => ({ turnId: e.turnId }))
+  on('skill.prompt', ($, e) => ({ text: e.text }))
+  on('ui.blit', () => ({ value: { deny: 'not mounted' } }))
+
+  const shows = async () => {
+    const ui = await $.ui.mount(band(true))
+    const found = JSON.stringify(await ui.findAll({ type: 'Image' }))
+    await ui.unmount()
+
+    return found
+  }
+  // the band as it stands while each tool runs
+  const during: string[] = []
+  on('tool.call', async () => {
+    during.push(await shows())
+    return { result: {} }
+  })
+
+  await $.skill.prompt({ skill: 'imp:secretary', text: 'x' })
+  await $.turn.start({ text: 'hi', turnId: 't1' })
+  await $.tool.call({ tool: 'mcp__plugin_Notion_notion__notion-search', query: 'x' })
+  await $.tool.call({ tool: 'Bash', command: 'ntn pages get abc' })
+  await $.tool.call({ tool: 'Bash', command: 'cd ~ && ntn search x' })
+  await $.tool.call({ tool: 'Bash', command: 'ls' })
+
+  expect(during.slice(0, 3).every(one => one.includes('/assets/writer/bookshelf/'))).toBe(true)
+  expect(during[3]).toContain('/assets/writer/writing/')
+  // back to writing once the call is done
+  expect(await shows()).toContain('/assets/writer/writing/')
 })
 
 test('a session without the secretary keeps its own animation and stops when idle', async ($, on) => {

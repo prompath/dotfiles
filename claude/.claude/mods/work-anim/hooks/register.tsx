@@ -6,10 +6,15 @@ import { ANIMATIONS, KINDS } from './frames'
 
 const FRAME_MS = 160
 const PREVIEW_MS = 10_000
-// assets/broom.py, boat.py and sleigh.py draw these, and writer/ is a Wan 2.2 clip: 96 frames each at 12 a second
+// assets/broom.py, boat.py and sleigh.py draw these, and writer/ holds Wan 2.2 clips: 96 frames each at 12 a second
 const PICTURES: readonly Kind[] = ['broom', 'boat', 'sleigh', 'writer']
 const PICTURE_MS = 1000 / 12
 const PICTURE_FRAMES = 96
+// writer's clips: writing mid-strip, sipping tea on the left, the bookshelf on the right; the last two are 48-frame loops
+const WRITER_FRAMES = { writing: 96, sipping: 48, bookshelf: 48 } as const
+// a Notion MCP tool, or the ntn CLI run by Bash
+const NOTION_TOOL = /notion/i
+const NTN = /(^|[;&|(]\s*)ntn(\s|$)/
 
 // what `/anim` offers and random draws from: writer is the imp secretary session's own
 const CHOICES = KINDS.filter(k => k !== 'writer')
@@ -26,6 +31,10 @@ let isGallery = false
 let picture: Timer | undefined
 let pictureKind: Kind = 'broom'
 let pictureFrame = 0
+// the assets folder the frames come from: the kind's own, or one of writer's clips
+let pictureFolder = ''
+// Notion calls running now; more than one when they run in parallel
+let notionCalls = 0
 // the site the picture was last drawn under; a redraw may move it
 let pictureSite = ''
 // false once the terminal turns the picture down; walk plays in its place
@@ -33,8 +42,22 @@ let canShowImages = true
 // set once this session runs the imp secretary: writer, all the time; in memory, as $.store is every session's
 let isSecretary = false
 
+// what the secretary does: the bookshelf while Notion runs, writing through the rest of a turn, sipping tea between turns
+const writerClip = () => (notionCalls > 0 ? 'bookshelf' : inTurn ? 'writing' : 'sipping')
+
+// moves to the folder now due, from its first frame; false when it stays
+function follow() {
+  const folder = pictureKind === 'writer' ? `writer/${writerClip()}` : pictureKind
+  if (folder === pictureFolder) {
+    return false
+  }
+  pictureFolder = folder
+  pictureFrame = 0
+  return true
+}
+
 const pictureSource = ($: EngineInterface) =>
-  ({ file: `${$.plugin.root}/assets/${pictureKind}/${String(pictureFrame).padStart(2, '0')}.png`, format: 'png' }) as const
+  ({ file: `${$.plugin.root}/assets/${pictureFolder}/${String(pictureFrame).padStart(2, '0')}.png`, format: 'png' }) as const
 
 function stopPicture() {
   picture?.cancel()
@@ -155,6 +178,18 @@ export const register: Register = on => {
     return next(e)
   })
 
+  on('tool.call', async ($, e, next) => {
+    if (!NOTION_TOOL.test(e.tool) && !(e.tool === 'Bash' && NTN.test(e.command))) {
+      return next(e)
+    }
+    notionCalls++
+    try {
+      return await next(e)
+    } finally {
+      notionCalls--
+    }
+  })
+
   on('turn.complete', async ($, e, next) => {
     // a subagent's turn ending leaves the main turn, and the animation, running
     if (e.agentId === undefined) {
@@ -183,8 +218,11 @@ export const register: Register = on => {
       pictureKind = current
       pictureSite = e.requestId
       // the timer swaps frames in place; a redraw sends only the one on screen
+      follow()
       picture ??= $.clock.every(PICTURE_MS, () => {
-        pictureFrame = (pictureFrame + 1) % PICTURE_FRAMES
+        if (!follow()) {
+          pictureFrame = (pictureFrame + 1) % (pictureKind === 'writer' ? WRITER_FRAMES[writerClip()] : PICTURE_FRAMES)
+        }
         void $.ui.blit({ requestId: pictureSite, key: pictureKind, source: pictureSource($) }).then(result => {
           if (result.deny === undefined) {
             return
