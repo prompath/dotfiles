@@ -20,11 +20,8 @@ Still by hand afterwards: `claude` login, `gh auth login`, an SSH key for GitHub
 `chsh -s $(command -v zsh)`. On WSL the font is also installed for Windows; select
 "FiraCode Nerd Font" in the terminal settings.
 
-aiur installs from its private GitHub repo (`settings.json` points at it), so git needs HTTPS credentials for `github.com/prompath/aiur` first. Check with:
-```bash
-GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/prompath/aiur.git HEAD
-```
-Changes reach Claude Code after you push and run `/plugin marketplace update aiur`.
+Changes to the imp plugin (`github.com/prompath/imp`) reach Claude Code after you push and run
+`/plugin marketplace update imp`.
 
 ## Packages
 | Package | Config |
